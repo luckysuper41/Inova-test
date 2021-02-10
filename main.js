@@ -9,8 +9,11 @@ const submitForm = (e) => {
   // reset data
   id_show = 0;
   data_show = [];
+
   // reset form
-  document.getElementById("detail-country").style.display = "none";
+  if (document.getElementById("detail-country")) {
+    document.getElementById("detail-country").remove();
+  }
   document.getElementById("list-country").innerHTML = null;
 
   // get value from input-country
@@ -20,7 +23,7 @@ const submitForm = (e) => {
   getData(input_search);
 };
 
-// jquery - submit form
+// submit form
 document
   .getElementById("search-form-box")
   .addEventListener("submit", submitForm);
@@ -49,8 +52,8 @@ const list_brief_country = (data) => {
     .map((element, id) => {
       const show_brief_country = `
       <div class="country-brief-box">
-        <span> ${element.alpha3Code} </span>
-        <button type="button" class="country" onclick="showThisCountry(${id})">
+        <span class="alpha3code"> ${element.alpha3Code} </span>
+        <button type="button" class="country" onclick="showThisCountry(${id},event)">
           ${element.name}
         </button>
       </div>
@@ -63,24 +66,44 @@ const list_brief_country = (data) => {
 };
 
 // open form right when click an item from form left
-const showThisCountry = (id) => {
+const showThisCountry = (id, e) => {
+  e.preventDefault();
+  // remove form right of the previous object
+  if (document.getElementById("detail-country")) {
+    document.getElementById("detail-country").remove();
+  }
   // reset background of the previous object
   document.getElementById("list-country").children[id_show].style.background =
     "#fff";
-  // declare new id of the selected object
+
+  // declare id of the new selected object
   id_show = id;
-  // set background of the selected object
+  // set background of the new selected object
   document.getElementById("list-country").children[id_show].style.background =
     "rgb(220, 255, 255)";
-  //show form-right
-  document.getElementById("detail-country").style.display = "flex";
+
+  // create the new form-right
+  let newFormRight = document.createElement("div");
+  newFormRight.className = "detail-country";
+  newFormRight.id = "detail-country";
+  if (document.body.clientWidth < 750) {
+    // mobile
+    document
+      .getElementById("list-country")
+      .children[id_show].appendChild(newFormRight);
+  } else {
+    // desktop
+    document.getElementById("content-show").appendChild(newFormRight);
+  }
+
   document.getElementById("detail-country").innerHTML = list_detail_country(
-    data_show[id_show]
+    data_show[id_show],
+    id_show
   );
 };
 
 // show detail country - form right
-const list_detail_country = (data) => {
+const list_detail_country = (data, id) => {
   const data_show = `
     <img src="${data.flag}" alt="image-flag"/>
     <div class="content-box">
@@ -124,6 +147,22 @@ const list_detail_country = (data) => {
         })
         .join(", ")}</p>
     </div>
+    <div class="close-form">
+      <button class="button-close" type="button" onclick="close_form_right(${id},event)"=>Close</button>
+    </div>
   `;
   return data_show;
+};
+
+// function close form right
+const close_form_right = (id, e) => {
+  e.preventDefault();
+
+  // reset background of the object of this id
+  document.getElementById("list-country").children[id].style.background =
+    "#fff";
+  // remove form right of the object of this id
+  if (document.getElementById("detail-country")) {
+    document.getElementById("detail-country").remove();
+  }
 };
